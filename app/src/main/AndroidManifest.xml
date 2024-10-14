@@ -13,8 +13,12 @@
         android:theme="@style/Theme.Tp2_Login_File_Stream"
         tools:targetApi="31">
         <activity
+            android:name=".ui.registro.RegistroMainActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.login.LoginMainActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

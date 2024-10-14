@@ -1,6 +1,8 @@
 package com.pamcompany.tp2_login_file_stream.request;
 
 import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.pamcompany.tp2_login_file_stream.model.Usuario;
 
@@ -26,30 +28,23 @@ public class ApiClient {
 
 
     public static void guardar(Context context, Usuario usuario){
-        File archivo= conectar(context);
+        //File archivo= conectar(context);
 
-        //exists(),createNewFile() son metodos de la clase File.
-        if(!archivo.exists()) {
-            try {
-                archivo.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        File archivo= new File(context.getFilesDir(), "usuario.dat");
+
         try {
-            //Los flujos soportan diferentes clases de datos.
-            //bytes simples, tipos de datos primitivos, caracteres y objeto
-            //Un programa usa un “flujo de salida” para escribir datos a un destino "OutputStream"
-            //FileOutputStream escribe bytes de datos a un fichero del sistema local.
-            FileOutputStream fos= new FileOutputStream(archivo);
-            ObjectOutputStream oos= new ObjectOutputStream(fos);
-            oos.writeObject(usuario);
-            oos.flush();
-            oos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            //Los flujos soportan diferentes tipos de datos como bytes simples, tipos de datos primitivos, caracteres y objeto
+            //FileOutputStream Nodo o canal por el que viajaran los bytes de datos al archivo que cree
+            FileOutputStream nodo= new FileOutputStream(archivo);
+            try (ObjectOutputStream oos = new ObjectOutputStream(nodo)) {
+                oos.writeObject(usuario);
+                //vaciar el buffer
+                oos.flush();
+            }
+            nodo.close();//cierro nodo
+            //Log.d("UsuarioGuardado ", usuario.getEmail());
         } catch (IOException e) {
-            e.printStackTrace();
+            Toast.makeText(context, "IO Exception en metodo guardar datos", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -57,28 +52,40 @@ public class ApiClient {
     //Un programa usa un “flujo de entrada” para leer datos de un origen "InputStream"
     public static Usuario leer(Context context){
         Usuario usuario= new Usuario();
-        File archivo= conectar(context);
+        File directorio= context.getFilesDir();
+        File archivo= new File(directorio, "usuario.dat");
 
         try {
             //FileInputStream para leer datos de un archivo
             FileInputStream fis= new FileInputStream(archivo);
             ObjectInputStream ois= new ObjectInputStream(fis);
+
             usuario= (Usuario) ois.readObject();
 
+            Log.d("Usuario en try ApiClient leer: ", usuario.getEmail());
+
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Toast.makeText(context, "FileNotFoundException en metodo guardar datos", Toast.LENGTH_SHORT).show();
+
         } catch (IOException e) {
-            e.printStackTrace();
+            Toast.makeText(context, "IOException en metodo guardar datos", Toast.LENGTH_SHORT).show();
+
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            Toast.makeText(context, "ClassNotFoundExceptionen metodo guardar datos", Toast.LENGTH_SHORT).show();
+
         }
         return usuario;
     }
 
     public static Usuario login(Context context,String email, String password){
-        Usuario usuario= leer(context);
-        if (usuario.getEmail() != email || usuario.getPassword() != password ){
+        Usuario usuario = null;
+        usuario= leer(context);
+        Log.d("Usuario login: ", email);
+        if (!email.equals(usuario.getEmail()) || !password.equals(usuario.getPassword())){
             usuario = null;
+        }
+        else{
+            Log.d("Usuario login: ", usuario.getEmail());
         }
         return usuario;
     }
